@@ -6,6 +6,13 @@ export interface User {
   birthday?: string
   age?: number
   email_verified_at?: string | null
+  roles?: Role[]
   created_at?: string
   updated_at?: string
+}
+
+export interface Role {
+  id: number
+  name: string
+  slug: string
 }

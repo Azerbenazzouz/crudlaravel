@@ -11,13 +11,10 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated(): boolean {
-      // console.log('isAuthenticated', this.isLoggedIn && !!this.token)
-      return !!localStorage.getItem('token')
+    isAuthenticated: (state): boolean => {
+      return !!state.token
     },
-    currentUser(): User | null {
-      return this.user
-    },
+    currentUser: (state): User | null => state.user,
   },
 
   actions: {
@@ -33,8 +30,8 @@ export const useAuthStore = defineStore('auth', {
       try {
         await axios.request(config)
           .then((response) => {
-            const user : User = response.data.original.data.auth as User;
-            this.setAuthData(user, token as unknown as string)
+            const user: User = response.data.original.data.auth as User;
+            this.setAuthData(user, token)
             return response;
           })
           .catch((error) => {
@@ -54,12 +51,28 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('user', JSON.stringify(user))
     },
 
-    logout() {
+    async logout() {
       this.isLoggedIn = false
       this.user = null
       this.token = null
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
+      
+      const config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${ApiUrl}auth/logout`,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      };
+      await axios.request(config)
+        .then(() => {
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
     },
 
     async checkAuth() {
@@ -76,7 +89,7 @@ export const useAuthStore = defineStore('auth', {
         try {
           await axios.request(config)
             .then((response) => {
-              const user : User = response.data.original.data.auth as User;
+              const user: User = response.data.original.data.auth as User;
               this.setAuthData(user, token)
               return response;
             })

@@ -19,14 +19,14 @@
         <v-spacer class="d-md-none"></v-spacer>
 
         <!-- Auth Buttons -->
-        <v-col cols="auto" v-if="!authStore.isAuthenticated" class="d-none d-md-flex">
+        <v-col cols="auto" v-if="!authenticated" class="d-none d-md-flex">
           <v-btn text to="/login" class="text-capitalize mx-2">Connexion</v-btn>
           <v-btn color="primary" to="/register" class="text-capitalize mx-2" outlined>
             Inscription
           </v-btn>
         </v-col>
 
-        <v-col cols="auto" v-if="authStore.isAuthenticated" class="d-none d-md-flex">
+        <v-col cols="auto" v-if="authenticated" class="d-none d-md-flex">
           <v-btn text to="/dashboard" class="text-capitalize mx-2">Dashboard</v-btn>
           <v-btn color="primary" @click="handleLogout" class="text-capitalize mx-2" outlined>
             Déconnexion
@@ -49,7 +49,7 @@
         <v-list-item to="/about" link>
           <v-list-item-title>À propos</v-list-item-title>
         </v-list-item>
-        <template v-if="!authStore.isAuthenticated">
+        <template v-if="!authenticated">
           <v-list-item to="/login" link>
             <v-list-item-title>Connexion</v-list-item-title>
           </v-list-item>
@@ -71,22 +71,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/useAuth'
+  defineOptions({ name: 'AppNavbar' })
+  import { ref, computed, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/useAuth'
 
-const router = useRouter()
-const authStore = useAuthStore()
-const drawer = ref(false)
+  const router = useRouter()
+  const authStore = useAuthStore()
+  const drawer = ref(false)
+  // Utilisez computed afin que la valeur se mette à jour
+  const authenticated = computed(() => authStore.isAuthenticated)
 
-const handleLogout = async () => {
-  authStore.logout()
-  await router.push('/login')
-}
+  const handleLogout = async () => {
+    await authStore.logout()
+    drawer.value = false
+    await router.push('/login')
+  }
 
-onMounted(() => {
-  authStore.checkAuth()
-})
+  onMounted(() => {
+    authStore.checkAuth()
+  })
 </script>
 
 <style scoped>
