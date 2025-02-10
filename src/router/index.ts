@@ -12,11 +12,23 @@ const router = createRouter({
     },
     {
       path: '/login',
-      name: 'Connexion',
+      name: 'Login',
+      component: LoginView,
+    },
+    {
+      path: '/register',
+      name: 'Register',
       component: LoginView,
     },
   ],
 })
 
-export default router
+router.beforeEach((to) => {
+  if (localStorage.getItem("token") && (to.name === 'Login' || to.name === 'Register')) {
+    return { name: 'home' } // Redirect to home if authenticated
+  }
+  return true
+})
 
+
+export default router

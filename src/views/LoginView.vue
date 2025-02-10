@@ -64,6 +64,7 @@ import { ref } from 'vue'
 import { AuthLogin, LoginModel, LoginResponseModel } from '@/api/authentification'
 import type { ResponseSuccessModel, ResponseErrorModel } from '@/models/Response'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/useAuth'
 
 const email = ref('')
 const password = ref('')
@@ -72,6 +73,7 @@ const emailErrors = ref<string[]>([])
 const passwordErrors = ref<string[]>([])
 const error = ref<string | null>(null)
 const router = useRouter()
+const authStore = useAuthStore()
 
 const login = async () => {
   loading.value = true
@@ -88,7 +90,7 @@ const login = async () => {
 
     if ((apiResponse as ResponseSuccessModel<LoginResponseModel>).original?.status) {
       const successResponse = apiResponse as ResponseSuccessModel<LoginResponseModel>
-      localStorage.setItem('token', successResponse.original.data.accessToken)
+      authStore.login(successResponse.original.data.accessToken)
       router.push('/')
     } else {
       // Erreur de connexion
