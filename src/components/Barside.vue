@@ -24,40 +24,35 @@ defineOptions({
 
 const menuItems = [
   {
-    title: 'Historique',
-    icon: 'mdi-history',
-    to: '/dashboard/historique',
-  },
-  {
     title: 'Add Product',
     icon: 'mdi-package-variant',
     to: '/dashboard/add-product',
   },
   {
-    title: 'Users',
-    icon: 'mdi-account-group',
-    to: '/dashboard/users',
-  },
-  {
     title: 'Products',
     icon: 'mdi-package-variant',
    to: '/dashboard/products',
- },
- {
-   title: 'Generate Post',
-   icon: 'mdi-post',
-   to: '/dashboard/generate-post',
- },
- {
-   title: 'Generate Description',
-   icon: 'mdi-text',
-   to: '/dashboard/generate-description',
- },
- {
-   title: 'Generate SEO',
-   icon: 'mdi-search-web',
-   to: '/dashboard/generate-seo',
- },
+  },
+  {
+    title: 'Generate Post',
+    icon: 'mdi-post',
+    to: '/dashboard/generate-post',
+  },
+  {
+    title: 'Generate Description',
+    icon: 'mdi-text',
+    to: '/dashboard/generate-description',
+  },
+  {
+    title: 'Generate SEO',
+    icon: 'mdi-search-web',
+    to: '/dashboard/generate-seo',
+  },
+  {
+    title: 'Historique',
+    icon: 'mdi-history',
+    to: '/dashboard/historique',
+  },
 ]
 </script>
 
