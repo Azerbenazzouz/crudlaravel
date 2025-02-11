@@ -13,12 +13,24 @@
               class="mx-auto"
             ></v-img>
             <v-card-title class="text-h4 font-weight-bold primary--text mt-4">
-              Connexion
+              Register
             </v-card-title>
           </div>
 
-          <!-- Login Form -->
-          <v-form @submit.prevent="login">
+          <!-- Register Form -->
+          <v-form @submit.prevent="register">
+            <v-text-field
+              v-model="name"
+              label="Nom et Prénom"
+              type="text"
+              outlined
+              dense
+              prepend-inner-icon="mdi-account"
+              class="mb-4"
+              required
+              :error-messages="nameErrors"
+            ></v-text-field>
+
             <v-text-field
               v-model="email"
               label="Adresse Email"
@@ -29,6 +41,18 @@
               class="mb-4"
               required
               :error-messages="emailErrors"
+            ></v-text-field>
+
+            <v-text-field
+              v-model="birthday"
+              label="Date de Naissance"
+              type="date"
+              outlined
+              dense
+              prepend-inner-icon="mdi-calendar"
+              class="mb-4"
+              required
+              :error-messages="birthdayErrors"
             ></v-text-field>
 
             <v-text-field
@@ -45,12 +69,12 @@
 
             <!-- EMAIL Or Mdp are not true -->
             <v-alert v-if="error" type="error" dense class="mb-4">
-              {{error}}
+              Vérifiez vos informations de connexion et réessayez.
             </v-alert>
 
             <!-- Submit Button -->
             <v-btn block color="primary" type="submit" :loading="loading" class="font-weight-bold">
-              Se Connecter
+              Register
             </v-btn>
           </v-form>
         </v-card>
@@ -61,48 +85,57 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { AuthLogin, LoginModel, LoginResponseModel } from '@/api/authentification'
+import { AuthRegister, RegisterModel } from '@/api/authentification'
 import type { ResponseModel } from '@/models/Response'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/useAuth'
 
+const name = ref('')
 const email = ref('')
+const birthday = ref('')
 const password = ref('')
 const loading = ref(false)
+const nameErrors = ref<string[]>([])
 const emailErrors = ref<string[]>([])
+const birthdayErrors = ref<string[]>([])
 const passwordErrors = ref<string[]>([])
 const error = ref<string | null>(null)
 const router = useRouter()
-const authStore = useAuthStore()
 
-const login = async () => {
+const register = async () => {
   loading.value = true
+  nameErrors.value = []
   emailErrors.value = []
+  birthdayErrors.value = []
   passwordErrors.value = []
+  error.value = null
 
-  const data: LoginModel = {
+  const data: RegisterModel = {
+    name: name.value,
     email: email.value,
+    birthday: birthday.value,
     password: password.value,
   }
 
-  await AuthLogin(data)
-  .then((apiResponse: ResponseModel<LoginResponseModel>) => {
-    if(apiResponse.code === 200){
-      authStore.login(apiResponse.data.accessToken)
-      router.push('/')
-    } else {
-      emailErrors.value = apiResponse.errors.email || []
-      passwordErrors.value = apiResponse.errors.password || []
-      if(apiResponse.code === 401) {
-        error.value = 'Email ou mot de passe incorrect.'
-      } else {
-        error.value = apiResponse.message
-      }
-    }
-  }).finally(() => {
-    loading.value = false
-  })
+  try {
+    const response = await AuthRegister(data)
 
+    if (response.status) {
+      router.push('/login')
+    } else {
+      if (response.errors) {
+        nameErrors.value = response.errors.name || []
+        emailErrors.value = response.errors.email || []
+        birthdayErrors.value = response.errors.birthday || []
+        passwordErrors.value = response.errors.password || []
+      }
+      error.value = response.message
+    }
+  } catch (error) {
+    console.error('An error occurred:', error)
+    error.value = 'Une erreur inattendue est survenue.'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

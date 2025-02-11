@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await axios.request(config)
           .then((response) => {
-            const user: User = response.data.original.data.auth as User;
+            const user: User = response.data.data.auth as User;
             this.setAuthData(user, token)
             return response;
           })
@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggedIn = false
       this.user = null
       this.token = null
-      
+
       const config = {
         method: 'post',
         maxBodyLength: Infinity,
