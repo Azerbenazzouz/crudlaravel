@@ -42,7 +42,6 @@ function resolveImage(image: string | File | null) {
   return typeof image === 'string' ? image : URL.createObjectURL(image);
 }
 
-// lifecycle hook
 onMounted(async() => {
   await GetProducts()
   .then((data : ResponseModel<Product[]> | ResponseModel<null>) => {

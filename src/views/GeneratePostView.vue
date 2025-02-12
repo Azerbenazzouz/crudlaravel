@@ -34,19 +34,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import PostResult from '../components/PostResult.vue';
+import type { Product } from '@/models/Product';
+import { GetProducts } from '@/api/product';
+import type { ResponseModel } from '@/models/Response';
 
 // Mock product list (replace with actual data later)
-const products = ref([
-  { id: 1, name: 'Product 1' },
-  { id: 2, name: 'Product 2' },
-  { id: 3, name: 'Product 3' },
-]);
+const products = ref<Product[]>([]);
 
 const selectedProduct = ref();
 const additionalInfo = ref('');
 const generatedPost = ref('');
+
+onMounted(async() => {
+  await GetProducts()
+  .then((data : ResponseModel<Product[]> | ResponseModel<null>) => {
+    if(data.data) {
+      products.value = data.data;
+      console.log(data);
+    }else {
+      console.error(data.message);
+    }
+  });
+});
+
 
 const generatePost = () => {
   // Simulate post generation (replace with actual logic later)
