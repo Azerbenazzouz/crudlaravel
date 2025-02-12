@@ -9,7 +9,7 @@
       <v-col cols="12" sm="6" md="4" lg="3" v-for="product in products" :key="product.id">
         <v-card>
           <v-img
-            :src="product.image"
+            :src="resolveImage(product.image) ?? ''"
             height="200px"
             cover
           ></v-img>
@@ -29,12 +29,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { GetProducts } from '@/api/product';
+import type { Product } from '@/models/Product';
+import type { ResponseModel } from '@/models/Response';
+import { onMounted, ref } from 'vue';
 
-// Mock product data (replace with actual data later)
-const products = ref([
-  { id: 1, name: 'Product 1', description: 'Description 1', price: 10, image: 'https://via.placeholder.com/300x200?text=Product+1' },
-  { id: 2, name: 'Product 2', description: 'Description 2', price: 20, image: 'https://via.placeholder.com/300x200?text=Product+2' },
-  { id: 3, name: 'Product 3', description: 'Description 3', price: 30, image: 'https://via.placeholder.com/300x200?text=Product+3' },
-]);
+const products = ref<Product[]>([]);
+
+// utility function to resolve image source
+function resolveImage(image: string | File | null) {
+  if (!image) return '';
+  return typeof image === 'string' ? image : URL.createObjectURL(image);
+}
+
+// lifecycle hook
+onMounted(async() => {
+  await GetProducts()
+  .then((data : ResponseModel<Product[]> | ResponseModel<null>) => {
+    if(data.data) {
+      products.value = data.data;
+      console.log(data);
+    }else {
+      console.error(data.message);
+    }
+  });
+});
+
 </script>
