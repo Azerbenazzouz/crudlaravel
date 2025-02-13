@@ -13,16 +13,22 @@
           item-title="name"
           item-value="id"
           v-model="selectedProduct"
+          :error-messages="productNameErrors"
+          required
         ></v-select>
       </v-col>
       <v-col cols="12">
         <v-textarea
           label="Additional Information"
           v-model="additionalInfo"
+          :error-messages="productAdditionalInfoErrors"
+          required
         ></v-textarea>
       </v-col>
       <v-col cols="12">
-        <v-btn color="primary" @click="generateSEO">Generate</v-btn>
+        <v-btn color="primary" @click="generateSEO" :loading="loading">
+          Generate
+        </v-btn>
       </v-col>
     </v-row>
     <v-row>
@@ -34,25 +40,70 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import SEOResult from '../components/SEOResult.vue';
+import type { Product } from '@/models/Product';
+import { GetProducts } from '@/api/product';
+import type { ResponseModel } from '@/models/Response';
+import {
+  GenerateSEOContent,
+  type GenerateRequestModel,
+  type GenerateResponseModel,
+} from '@/api/generator';
 
-// Mock product list (replace with actual data later)
-const products = ref([
-  { id: 1, name: 'Product 1' },
-  { id: 2, name: 'Product 2' },
-  { id: 3, name: 'Product 3' },
-]);
+const products = ref<Product[]>([]);
 
 const selectedProduct = ref();
 const additionalInfo = ref('');
 const generatedSEO = ref('');
+const loading = ref(false);
+const productNameErrors = ref<string[]>([]);
+const productAdditionalInfoErrors = ref<string[]>([]);
 
-const generateSEO = () => {
-  // Simulate SEO data generation (replace with actual logic later)
-  generatedSEO.value = `SEO data for ${
-    products.value.find((p) => p.id === selectedProduct.value)?.name
-  }: ${additionalInfo.value}`;
+onMounted(async () => {
+  await GetProducts().then(
+    (data: ResponseModel<Product[]> | ResponseModel<null>) => {
+      if (data.data) {
+        products.value = data.data;
+      } else {
+        console.error(data.message);
+      }
+    }
+  );
+});
+
+const generateSEO = async () => {
+  if (!selectedProduct.value) {
+    productNameErrors.value = ['Product is required'];
+    return;
+  } else {
+    productNameErrors.value = [];
+  }
+
+  if (!additionalInfo.value) {
+    productAdditionalInfoErrors.value = ['Additional information is required'];
+    return;
+  } else {
+    productAdditionalInfoErrors.value = [];
+  }
+
+  loading.value = true;
+  const request = {
+    product_id: Number(selectedProduct.value),
+    additional_information: additionalInfo.value ?? '',
+  } as GenerateRequestModel;
+
+  await GenerateSEOContent(request)
+    .then((data: ResponseModel<GenerateResponseModel> | ResponseModel<null>) => {
+      if (data.data) {
+        generatedSEO.value = data.data.content;
+      } else {
+        console.error(data.message);
+      }
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 };
 
 const onSEOCopied = () => {
@@ -60,5 +111,4 @@ const onSEOCopied = () => {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

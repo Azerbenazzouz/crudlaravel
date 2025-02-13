@@ -26,6 +26,14 @@
       <v-col cols="12">
         <v-btn color="primary" @click="generatePost" :loading="loading"> Generate </v-btn>
       </v-col>
+      <!-- Error Message -->
+      <v-alert v-if="Errors.length > 0" type="error" dense >
+        <v-row v-for="(error, index) in Errors" :key="index">
+          <v-col cols="12">
+            {{ error }}
+          </v-col>
+        </v-row>
+      </v-alert>
     </v-row>
     <v-row>
       <v-col cols="12">
@@ -56,6 +64,8 @@ const generatedPost = ref('')
 const loading = ref(false) // Variable de chargement
 const productNameErrors = ref<string[]>([]) // Erreurs de validation
 const productAdditionalInfoErrors = ref<string[]>([]) // Erreurs de validation
+const Errors = ref<string[]>([]) // Erreurs de validation
+
 onMounted(async () => {
   await GetProducts().then((data: ResponseModel<Product[]> | ResponseModel<null>) => {
     if (data.data) {
@@ -93,7 +103,7 @@ const generatePost = async () => {
       if (data.data) {
         generatedPost.value = data.data.content
       } else {
-        console.error(data.message)
+        Errors.value = [data.message]
       }
     })
     .finally(() => {
