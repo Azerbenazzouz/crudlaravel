@@ -32,7 +32,6 @@
         <v-file-input
           label="Image"
           v-model="image"
-          accept="image/png, image/jpeg"
           :error-messages="imageErrors"
         ></v-file-input>
       </v-col>
@@ -43,9 +42,7 @@
         <v-alert v-if="success" type="success" dense class="mb-4">
           Produit ajouté avec succès!
         </v-alert>
-        <v-btn :loading="loading" color="primary" @click="addProduct">
-          Ajouter le produit
-        </v-btn>
+        <v-btn color="primary" @click="addProduct" :loading="loading">Add</v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -58,8 +55,8 @@ import { ref } from 'vue'
 
 const productName = ref('')
 const description = ref('')
-const price = ref<number>(0)
-const image = ref<File | undefined>()
+const price = ref()
+const image = ref()
 const loading = ref(false)
 const success = ref(false)
 
@@ -82,35 +79,34 @@ const addProduct = async () => {
     name: productName.value,
     description: description.value,
     price: price.value,
-    image: image.value ? image.value : null,
+    image: image.value ? image.value[0] : undefined,
   }
 
-  try {
-    const res = await AddProduct(product)
-    if (res.status) {
-      success.value = true
-      productName.value = ''
-      description.value = ''
-      price.value = 0
-      image.value = undefined
-    } else {
-      if (res.errors) {
-        productNameErrors.value = res.errors.name || []
-        descriptionErrors.value = res.errors.description || []
-        priceErrors.value = res.errors.price || []
-        imageErrors.value = res.errors.image || []
+  await AddProduct(product)
+    .then((res) => {
+      if (res.status) {
+        success.value = true
+        productName.value = ''
+        description.value = ''
+        price.value = undefined
+        image.value = undefined
+      } else {
+        if(res.errors) {
+          productNameErrors.value = res.errors.name || []
+          descriptionErrors.value = res.errors.description || []
+          priceErrors.value = res.errors.price || []
+          imageErrors.value = res.errors.image || []
+        }
+        error.value = res.message
       }
-      error.value = res.message
-    }
-  } catch (err) {
-    console.error(err)
-    error.value = 'Une erreur est survenue.'
-  } finally {
-    loading.value = false
-  }
+    })
+    .catch((err) => {
+      console.log(err)
+      error.value = 'Une erreur est survenue.'
+    }).finally(() => {
+      loading.value = false
+    })
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -53,7 +53,6 @@ const GetProducts = async (): Promise<ResponseModel<Product[]> | ResponseModel<n
     url: `${ApiUrl}products`,
     headers: {
       Authorization: `Bearer ${useAuthStore().token}`,
-      'Content-Type': 'multipart/form-data',
     },
   }
 
